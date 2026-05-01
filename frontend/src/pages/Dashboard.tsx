@@ -1,0 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+} from 'recharts';
+import { TrendingUp, Target, Award, Clock } from 'lucide-react';
+import './pages.css';
+
+const Dashboard: React.FC = () => {
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState('Aspirant');
+
+  useEffect(() => {
+    // In a real app, user_id would be from auth
+    axios.get('http://localhost:5000/api/analytics/1')
+      .then(res => {
+        setAnalytics(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch analytics", err);
+        setLoading(false);
+      });
+      
+    const loadUsername = () => {
+      const savedName = localStorage.getItem('uksssc_username');
+      if (savedName) setUsername(savedName);
+    };
+    
+    loadUsername();
+    window.addEventListener('storage', loadUsername);
+    return () => window.removeEventListener('storage', loadUsername);
+  }, []);
+
+  if (loading) {
+    return <div className="container"><div className="loading-spinner">Loading your progress...</div></div>;
+  }
+
+  const historyData = analytics?.history || [];
+  const predictedScore = analytics?.predicted_score || 0;
+  const sectionAccuracy = analytics?.section_accuracy || [];
+
+  return (
+    <div className="container animate-fade-in">
+      <div className="dashboard-header">
+        <div>
+          <h1 className="page-title">Welcome back, <span className="gradient-text">{username}</span></h1>
+          <p className="page-subtitle">Track your UKSSSC VDO/Patwari exam preparation journey.</p>
+        </div>
+        <Link to="/generate" className="btn btn-primary">
+          Take New Mock Test
+        </Link>
+      </div>
+
+      <div className="stats-grid">
+        <div className="glass-panel stat-card">
+          <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)' }}>
+            <Target size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>Predicted Score</h3>
+            <p className="stat-value">{predictedScore}%</p>
+          </div>
+        </div>
+        <div className="glass-panel stat-card">
+          <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-success)' }}>
+            <Award size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>Tests Completed</h3>
+            <p className="stat-value">{historyData.length}</p>
+          </div>
+        </div>
+        <div className="glass-panel stat-card">
+          <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--accent-warning)' }}>
+            <TrendingUp size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>Recent Score</h3>
+            <p className="stat-value">{historyData.length > 0 ? `${historyData[historyData.length - 1].percentage.toFixed(1)}%` : 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="charts-container">
+        <div className="glass-panel chart-panel">
+          <h2 className="section-title">Performance Trend</h2>
+          {historyData.length > 0 ? (
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={historyData}>
+                  <defs>
+                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                  <XAxis dataKey="date" stroke="var(--text-muted)" />
+                  <YAxis stroke="var(--text-muted)" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
+                    itemStyle={{ color: 'var(--text-primary)' }}
+                  />
+                  <Area type="monotone" dataKey="percentage" stroke="var(--accent-primary)" fillOpacity={1} fill="url(#colorScore)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <Clock size={48} className="empty-icon" />
+              <p>Take your first mock test to see your performance trend.</p>
+            </div>
+          )}
+        </div>
+        
+        <div className="glass-panel chart-panel">
+          <h2 className="section-title">Subject Mastery (Accuracy)</h2>
+          {sectionAccuracy.length > 0 ? (
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={sectionAccuracy}>
+                  <PolarGrid stroke="var(--border-color)" />
+                  <PolarAngleAxis dataKey="section" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="var(--text-muted)" />
+                  <Radar name="Accuracy" dataKey="accuracy" stroke="var(--accent-primary)" fill="var(--accent-primary)" fillOpacity={0.5} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
+                    itemStyle={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <Award size={48} className="empty-icon" />
+              <p>Complete tests to see your strong and weak sections.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
