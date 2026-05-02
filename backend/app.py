@@ -1,9 +1,13 @@
+import os
+import sys
+
+# Add the current directory to sys.path so that imports work on Vercel
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from flask import Flask
 from flask_cors import CORS
 from models import db
 from routes import api
-
-import os
 
 def create_app():
     app = Flask(__name__, instance_path='/tmp' if os.environ.get('VERCEL') else None)
