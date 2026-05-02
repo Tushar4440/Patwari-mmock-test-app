@@ -23,13 +23,13 @@ def generate_mock_test_from_syllabus(syllabus_text, section="full"):
     
     questions = []
     
-    # Optimize to make only 1 API call to avoid rate limits
+    # Optimize to make only 1 API call and stay under Vercel's 10s timeout
     if section == "full":
         prompt_sections = "General Hindi, General Knowledge, and Uttarakhand GK"
-        instructions = "Create exactly 7 highly difficult questions for EACH of the three sections (21 questions total)."
+        instructions = "Create exactly 5 highly difficult questions for EACH of the three sections (15 questions total)."
     else:
         prompt_sections = section
-        instructions = f"Create exactly 20 highly difficult questions for the '{section}' section."
+        instructions = f"Create exactly 10 highly difficult questions for the '{section}' section."
 
     prompt = f"""
     You are an expert exam setter for the UKSSSC VDO/Patwari exam. 
