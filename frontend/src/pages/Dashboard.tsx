@@ -6,6 +6,7 @@ import {
   AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 import { TrendingUp, Target, Award, Clock } from 'lucide-react';
+import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
 const Dashboard: React.FC = () => {
@@ -15,7 +16,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     // In a real app, user_id would be from auth
-    axios.get('http://localhost:5000/api/analytics/1')
+    axios.get(`${API_BASE_URL}/analytics/1`)
       .then(res => {
         setAnalytics(res.data);
         setLoading(false);

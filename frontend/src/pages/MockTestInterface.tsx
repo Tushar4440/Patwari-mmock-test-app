@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Clock, CheckCircle, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
+import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
 interface Question {
@@ -32,7 +33,7 @@ const MockTestInterface: React.FC = () => {
 
   useEffect(() => {
     // Fetch test questions
-    axios.get(`http://localhost:5000/api/tests/${id}`)
+    axios.get(`${API_BASE_URL}/tests/${id}`)
       .then(res => {
         setTestData(res.data);
         // Set time based on questions (e.g. 1 min per question)
@@ -74,7 +75,7 @@ const MockTestInterface: React.FC = () => {
     
     setSubmitting(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/submit_test', {
+      const res = await axios.post(`${API_BASE_URL}/submit_test`, {
         test_id: parseInt(id!),
         user_id: 1, // Default user
         answers: answers

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Settings, Zap } from 'lucide-react';
+import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
 const TestGenerator: React.FC = () => {
@@ -39,7 +40,7 @@ const TestGenerator: React.FC = () => {
         title: `Mock Test - ${section === 'full' ? 'Full Length' : section}`
       };
       
-      const res = await axios.post('http://localhost:5000/api/generate_test', payload);
+      const res = await axios.post(`${API_BASE_URL}/generate_test`, payload);
       
       setGenerating(false);
       navigate(`/test/${res.data.test_id}`);

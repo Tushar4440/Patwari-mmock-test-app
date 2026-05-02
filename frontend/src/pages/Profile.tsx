@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Calendar, Save, CheckCircle } from 'lucide-react';
+import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
 const Profile: React.FC = () => {
@@ -9,7 +10,7 @@ const Profile: React.FC = () => {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/analytics/1')
+    axios.get(`${API_BASE_URL}/analytics/1`)
       .then(res => {
         setAnalytics(res.data);
       })
