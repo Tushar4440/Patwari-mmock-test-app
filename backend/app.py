@@ -6,15 +6,12 @@ from routes import api
 import os
 
 def create_app():
-    # Use /tmp for the database because Vercel's file system is read-only
-    # On local machine, it will still work but might save to a different temp location
-    database_path = '/tmp/database.db' if os.environ.get('VERCEL') else 'sqlite:///database.db'
-    
     app = Flask(__name__, instance_path='/tmp' if os.environ.get('VERCEL') else None)
     CORS(app)
     
     if os.environ.get('VERCEL'):
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{database_path}'
+        # Vercel uses a read-only file system except for /tmp
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/database.db'
     else:
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
         
