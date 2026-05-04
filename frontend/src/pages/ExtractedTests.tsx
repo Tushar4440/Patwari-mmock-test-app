@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BookMarked, Star, Play, RefreshCw, ShieldCheck, Calendar, FileText, Loader2 } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
@@ -80,8 +80,8 @@ const ExtractedTests: React.FC = () => {
     }
   };
 
-  const filteredTests = selectedTopic === 'All Topics' 
-    ? tests 
+  const filteredTests = selectedTopic === 'All Topics'
+    ? tests
     : tests.filter(t => t.title.includes(selectedTopic) || t.is_extracted); // Fallback: show all if title search isn't perfect, or we can improve the title matching
 
   return (
@@ -96,21 +96,21 @@ const ExtractedTests: React.FC = () => {
           <span className="gradient-text">Extracted</span> Mock Tests
         </h1>
         <p className="page-subtitle" style={{ maxWidth: '600px' }}>
-          Real questions from UKSSSC previous exams, categorized by sub-topics. 
+          Real questions from UKSSSC previous exams, categorized by sub-topics.
           Practice exactly what you need with verified exam material.
         </p>
 
         {/* Topic Selector */}
         <div className="topic-selector-container">
-           {subTopics.map(topic => (
-             <button 
-               key={topic} 
-               className={`topic-chip ${selectedTopic === topic ? 'active' : ''}`}
-               onClick={() => setSelectedTopic(topic)}
-             >
-               {topic}
-             </button>
-           ))}
+          {subTopics.map(topic => (
+            <button
+              key={topic}
+              className={`topic-chip ${selectedTopic === topic ? 'active' : ''}`}
+              onClick={() => setSelectedTopic(topic)}
+            >
+              {topic}
+            </button>
+          ))}
         </div>
 
         {/* ── Progress Bar ── */}
@@ -124,15 +124,15 @@ const ExtractedTests: React.FC = () => {
               <span className="progress-percent">{progress.overall_progress}%</span>
             </div>
             <div className="progress-bar-bg">
-              <div 
-                className="progress-bar-fill" 
+              <div
+                className="progress-bar-fill"
                 style={{ width: `${progress.overall_progress}%` }}
               ></div>
             </div>
             <div className="progress-footer">
               <label className="exclude-toggle">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={excludeAttempted}
                   onChange={(e) => setExcludeAttempted(e.target.checked)}
                 />
