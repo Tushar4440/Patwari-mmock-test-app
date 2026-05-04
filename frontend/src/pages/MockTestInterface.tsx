@@ -9,6 +9,7 @@ interface Question {
   id: number;
   section: string;
   text: string;
+  source?: string;
   options: string[];
 }
 
@@ -165,7 +166,22 @@ const MockTestInterface: React.FC = () => {
 
       <div className="glass-panel question-panel">
         <div className="question-meta">
-          <span className="section-badge">{currentQ.section}</span>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <span className="section-badge">{currentQ.section}</span>
+            {currentQ.source && (
+              <span className="source-badge" style={{ 
+                background: 'rgba(245, 158, 11, 0.1)', 
+                color: 'var(--accent-warning)', 
+                padding: '0.25rem 0.75rem', 
+                border: '1px solid rgba(245, 158, 11, 0.2)',
+                borderRadius: '1rem', 
+                fontSize: '0.8rem',
+                fontWeight: 600
+              }}>
+                Source: {currentQ.source}
+              </span>
+            )}
+          </div>
           {reviewMode && reviewDataForQ && (
              <span style={{ 
                padding: '0.25rem 0.75rem', 

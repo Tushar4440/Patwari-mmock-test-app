@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, BarChart2, PlusCircle, User } from 'lucide-react';
+import { BookOpen, BarChart2, PlusCircle, User, BookMarked } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const location = useLocation();
@@ -18,6 +18,12 @@ const Navigation: React.FC = () => {
           </Link>
           <Link to="/generate" className={`nav-link ${location.pathname === '/generate' ? 'active' : ''}`}>
             <PlusCircle size={18} /> New Test
+          </Link>
+          <Link
+            to="/extracted"
+            className={`nav-link nav-link-extracted ${location.pathname === '/extracted' ? 'active' : ''}`}
+          >
+            <BookMarked size={18} /> Extracted Tests
           </Link>
           <Link to="/profile" className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}>
             <User size={18} /> Profile

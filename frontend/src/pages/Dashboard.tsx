@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
-import { TrendingUp, Target, Award, Clock } from 'lucide-react';
+import { TrendingUp, Target, Award, Clock, BookMarked, ShieldCheck } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
@@ -84,6 +84,22 @@ const Dashboard: React.FC = () => {
             <p className="stat-value">{historyData.length > 0 ? `${historyData[historyData.length - 1].percentage.toFixed(1)}%` : 'N/A'}</p>
           </div>
         </div>
+      </div>
+
+      {/* ── Extracted Tests Promo Banner ── */}
+      <div className="extracted-promo-card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '0.75rem', borderRadius: 'var(--radius-lg)', display: 'flex' }}>
+            <BookMarked size={28} />
+          </div>
+          <div className="extracted-promo-text">
+            <h3>🎯 Extracted Mock Tests — UK GK Only</h3>
+            <p>Practice with real questions sourced from previous UKSSSC exams. <ShieldCheck size={13} style={{ verticalAlign: 'middle', color: 'var(--accent-success)' }} /> No AI content — 100% authentic.</p>
+          </div>
+        </div>
+        <Link to="/extracted" className="btn" style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)', color: '#fff', border: 'none', whiteSpace: 'nowrap' }}>
+          View Extracted Tests
+        </Link>
       </div>
 
       <div className="charts-container">

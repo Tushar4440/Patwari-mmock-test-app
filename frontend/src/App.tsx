@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import TestGenerator from './pages/TestGenerator';
 import MockTestInterface from './pages/MockTestInterface';
 import Profile from './pages/Profile';
+import ExtractedTests from './pages/ExtractedTests';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/generate" element={<TestGenerator />} />
             <Route path="/test/:id" element={<MockTestInterface />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/extracted" element={<ExtractedTests />} />
           </Routes>
         </main>
       </div>
