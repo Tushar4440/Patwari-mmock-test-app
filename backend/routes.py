@@ -1,9 +1,29 @@
 from flask import Blueprint, request, jsonify
 from models import db, MockTest, Question, TestAttempt, User
 from ai_service import generate_mock_test_from_syllabus
+from extracted_questions import UK_GK_QUESTION_BANK
 import json
 
 api = Blueprint('api', __name__)
+
+def _ensure_master_questions():
+    """Helper to auto-seed the MasterQuestion table if it's empty (Vercel specific fix)."""
+    from models import MasterQuestion
+    if MasterQuestion.query.count() == 0:
+        print("MasterQuestion table empty. Auto-seeding from static bank...")
+        for q_data in UK_GK_QUESTION_BANK:
+            mq = MasterQuestion(
+                section=q_data.get('section', 'Uttarakhand GK'),
+                sub_topic=q_data.get('sub_topic'),
+                text=q_data['text'],
+                options=json.dumps(q_data['options'], ensure_ascii=False),
+                correct_answer=q_data['correct_answer'],
+                explanation=q_data.get('explanation'),
+                source=q_data.get('source'),
+                difficulty='medium'
+            )
+            db.session.add(mq)
+        db.session.commit()
 
 @api.route('/upload_syllabus', methods=['POST'])
 def upload_syllabus():
@@ -91,6 +111,7 @@ def get_extracted_tests():
 def get_extracted_subtopics():
     """Returns unique list of sub-topics available in the MasterQuestion table."""
     from models import MasterQuestion
+    _ensure_master_questions()
     sub_topics = db.session.query(MasterQuestion.sub_topic).distinct().all()
     # Flatten list of tuples
     result = [st[0] for st in sub_topics if st[0]]
@@ -104,6 +125,7 @@ def seed_extracted_test():
     """
     from models import MasterQuestion, UserQuestionProgress
     import random
+    _ensure_master_questions()
 
     data = request.json or {}
     sub_topic = data.get('sub_topic')
@@ -298,6 +320,7 @@ def get_analytics(user_id):
 def get_user_progress(user_id):
     """Returns the user's progress through the MasterQuestion bank."""
     from models import MasterQuestion, UserQuestionProgress
+    _ensure_master_questions()
     
     total_bank = MasterQuestion.query.count()
     attempted_count = UserQuestionProgress.query.filter_by(user_id=user_id, is_attempted=True).count()
