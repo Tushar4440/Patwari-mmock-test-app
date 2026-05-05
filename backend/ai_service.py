@@ -2,6 +2,7 @@ import json
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+import random
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -66,7 +67,9 @@ def generate_mock_test_from_syllabus(syllabus_text, section="full"):
         
         # Add stringified options for our database compatibility
         for q in generated_data:
-            q['options'] = json.dumps(q['options'])
+            opts = q.get('options', [])
+            random.shuffle(opts)
+            q['options'] = json.dumps(opts, ensure_ascii=False)
             questions.append(q)
             
     except Exception as e:

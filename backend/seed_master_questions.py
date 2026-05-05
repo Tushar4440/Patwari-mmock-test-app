@@ -2,6 +2,7 @@ from app import app
 from models import db, MasterQuestion
 from extracted_questions import UK_GK_QUESTION_BANK
 import json
+import random
 
 def seed_master():
     with app.app_context():
@@ -14,11 +15,13 @@ def seed_master():
         
         count = 0
         for q_data in UK_GK_QUESTION_BANK:
+            opts = list(q_data['options'])
+            random.shuffle(opts)
             mq = MasterQuestion(
                 section=q_data.get('section', 'Uttarakhand GK'),
                 sub_topic=q_data.get('sub_topic'),
                 text=q_data['text'],
-                options=json.dumps(q_data['options']),
+                options=json.dumps(opts, ensure_ascii=False),
                 correct_answer=q_data['correct_answer'],
                 explanation=q_data.get('explanation'),
                 source=q_data.get('source'),

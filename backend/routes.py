@@ -3,6 +3,7 @@ from models import db, MockTest, Question, TestAttempt, User
 from ai_service import generate_mock_test_from_syllabus
 from extracted_questions import UK_GK_QUESTION_BANK
 import json
+import random
 
 api = Blueprint('api', __name__)
 
@@ -12,11 +13,13 @@ def _ensure_master_questions():
     if MasterQuestion.query.count() == 0:
         print("MasterQuestion table empty. Auto-seeding from static bank...")
         for q_data in UK_GK_QUESTION_BANK:
+            opts = list(q_data['options'])
+            random.shuffle(opts)
             mq = MasterQuestion(
                 section=q_data.get('section', 'Uttarakhand GK'),
                 sub_topic=q_data.get('sub_topic'),
                 text=q_data['text'],
-                options=json.dumps(q_data['options'], ensure_ascii=False),
+                options=json.dumps(opts, ensure_ascii=False),
                 correct_answer=q_data['correct_answer'],
                 explanation=q_data.get('explanation'),
                 source=q_data.get('source'),
@@ -124,7 +127,6 @@ def seed_extracted_test():
     Supports filtering by 'sub_topic' and 'exclude_attempted'.
     """
     from models import MasterQuestion, UserQuestionProgress
-    import random
     _ensure_master_questions()
 
     data = request.json or {}
@@ -170,12 +172,14 @@ def seed_extracted_test():
     db.session.commit()
 
     for mq in selected:
+        opts = json.loads(mq.options)
+        random.shuffle(opts)
         q = Question(
             test_id=new_test.id,
             master_question_id=mq.id,
             section=mq.section,
             text=mq.text,
-            options=mq.options, # Already JSON string in MasterQuestion
+            options=json.dumps(opts, ensure_ascii=False),
             correct_answer=mq.correct_answer,
             explanation=mq.explanation,
             source=mq.source
