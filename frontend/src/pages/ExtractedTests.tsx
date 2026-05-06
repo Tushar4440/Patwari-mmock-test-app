@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { BookMarked, Star, Play, RefreshCw, ShieldCheck, Calendar, FileText, Loader2 } from 'lucide-react';
+import { BookMarked, Star, Play, RefreshCw, ShieldCheck, Calendar, FileText, Loader2, ListOrdered, LayoutGrid } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
@@ -18,9 +18,12 @@ const ExtractedTests: React.FC = () => {
   const [tests, setTests] = useState<ExtractedTest[]>([]);
   const [subTopics, setSubTopics] = useState<string[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string>('All Topics');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
   const [excludeAttempted, setExcludeAttempted] = useState(false);
+  const [numQuestions, setNumQuestions] = useState(100); // New state for number of questions
+  const [balanceTopics, setBalanceTopics] = useState(true); // New state for balancing topics
   const [progress, setProgress] = useState<any>(null);
 
   const fetchSubTopics = () => {
@@ -67,7 +70,9 @@ const ExtractedTests: React.FC = () => {
       const payload = {
         sub_topic: selectedTopic === 'All Topics' ? null : selectedTopic,
         exclude_attempted: excludeAttempted,
-        user_id: 1
+        user_id: 1,
+        num_questions: numQuestions, // Send numQuestions
+        balance_topics: balanceTopics // Send balanceTopics
       };
       await axios.post(`${API_BASE_URL}/seed_extracted_test`, payload);
       fetchTests();
@@ -80,9 +85,12 @@ const ExtractedTests: React.FC = () => {
     }
   };
 
-  const filteredTests = selectedTopic === 'All Topics'
+  const filteredTests = (selectedTopic === 'All Topics'
     ? tests
-    : tests.filter(t => t.title.includes(selectedTopic) || t.is_extracted); // Fallback: show all if title search isn't perfect, or we can improve the title matching
+    : tests.filter(t => t.title.toLowerCase().includes(selectedTopic.toLowerCase())))
+    .filter(t =>
+      t.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="container animate-fade-in">
@@ -100,6 +108,18 @@ const ExtractedTests: React.FC = () => {
           Practice exactly what you need with verified exam material.
         </p>
 
+        {/* Search Bar */}
+        <div style={{ width: '100%', maxWidth: '500px', margin: '1.5rem 0' }}>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search within your generated tests..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+          />
+        </div>
+
         {/* Topic Selector */}
         <div className="topic-selector-container">
           {subTopics.map(topic => (
@@ -111,6 +131,59 @@ const ExtractedTests: React.FC = () => {
               {topic}
             </button>
           ))}
+        </div>
+
+        {/* ── Test Generation Options ── */}
+        <div className="glass-panel" style={{ marginTop: '1.5rem', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h3 className="section-title" style={{ margin: '0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <ListOrdered size={20} className="gradient-text" /> Generate New Test
+          </h3>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="input-group" style={{ flex: '1 1 150px', margin: 0 }}>
+              <label className="input-label" htmlFor="numQuestions">Number of Questions</label>
+              <input
+                id="numQuestions"
+                type="number"
+                className="select-field"
+                value={numQuestions}
+                onChange={(e) => setNumQuestions(Math.max(1, parseInt(e.target.value) || 1))}
+                min="1"
+                max="200" // Set a reasonable max
+                style={{ width: '100%' }}
+              />
+            </div>
+            <label className="exclude-toggle" style={{ flex: '1 1 200px', margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={excludeAttempted}
+                onChange={(e) => setExcludeAttempted(e.target.checked)}
+              />
+              <span>Exclude Attempted Questions</span>
+            </label>
+            {selectedTopic === 'All Topics' && (
+              <label className="exclude-toggle" style={{ flex: '1 1 200px', margin: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={balanceTopics}
+                  onChange={(e) => setBalanceTopics(e.target.checked)}
+                />
+                <span>Balance Topics (Full Mock)</span>
+              </label>
+            )}
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={handleSeedTest}
+            disabled={seeding}
+            id="btn-generate-topic-test"
+            style={{ padding: '0.9rem 2rem', fontSize: '1rem', marginTop: '1rem' }}
+          >
+            {seeding ? (
+              <><Loader2 size={18} className="spin-icon" /> Generating...</>
+            ) : (
+              <><RefreshCw size={18} /> Generate New {selectedTopic === 'All Topics' ? 'Full Mock' : selectedTopic} Test</>
+            )}
+          </button>
         </div>
 
         {/* ── Progress Bar ── */}
@@ -128,16 +201,6 @@ const ExtractedTests: React.FC = () => {
                 className="progress-bar-fill"
                 style={{ width: `${progress.overall_progress}%` }}
               ></div>
-            </div>
-            <div className="progress-footer">
-              <label className="exclude-toggle">
-                <input
-                  type="checkbox"
-                  checked={excludeAttempted}
-                  onChange={(e) => setExcludeAttempted(e.target.checked)}
-                />
-                <span>Exclude Attempted Questions</span>
-              </label>
             </div>
           </div>
         )}
@@ -158,22 +221,7 @@ const ExtractedTests: React.FC = () => {
         <div className="glass-panel extracted-empty">
           <BookMarked size={56} className="empty-icon" style={{ color: 'var(--accent-secondary)', opacity: 0.6 }} />
           <h2 style={{ marginBottom: '0.5rem' }}>No {selectedTopic} Tests Yet</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', textAlign: 'center' }}>
-            Click the button below to generate a new 30-question test set for <strong>{selectedTopic}</strong>.
-          </p>
-          <button
-            className="btn btn-primary"
-            onClick={handleSeedTest}
-            disabled={seeding}
-            id="btn-generate-topic-test"
-            style={{ padding: '0.9rem 2rem', fontSize: '1rem' }}
-          >
-            {seeding ? (
-              <><Loader2 size={18} className="spin-icon" /> Generating...</>
-            ) : (
-              <><RefreshCw size={18} /> Generate {selectedTopic} Test</>
-            )}
-          </button>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '400px', textAlign: 'center' }}>Click the button below to generate a new {numQuestions}-question test set for <strong>{selectedTopic}</strong>.</p>
         </div>
       ) : (
         <>
@@ -208,22 +256,6 @@ const ExtractedTests: React.FC = () => {
                 </button>
               </div>
             ))}
-          </div>
-
-          {/* Add more test */}
-          <div className="extracted-add-more">
-            <button
-              className="btn btn-outline"
-              onClick={handleSeedTest}
-              disabled={seeding}
-              id="btn-add-topic-set"
-            >
-              {seeding ? (
-                <><Loader2 size={16} className="spin-icon" /> Generating {selectedTopic} Set...</>
-              ) : (
-                <><RefreshCw size={16} /> Generate New {selectedTopic} Set</>
-              )}
-            </button>
           </div>
         </>
       )}

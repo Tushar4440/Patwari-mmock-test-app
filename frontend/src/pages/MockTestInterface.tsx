@@ -22,7 +22,7 @@ interface TestData {
 const MockTestInterface: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [testData, setTestData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -49,7 +49,7 @@ const MockTestInterface: React.FC = () => {
 
   useEffect(() => {
     if (loading || result) return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -60,7 +60,7 @@ const MockTestInterface: React.FC = () => {
         return prev - 1;
       });
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, [loading, result]);
 
@@ -73,7 +73,7 @@ const MockTestInterface: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!testData) return;
-    
+
     setSubmitting(true);
     try {
       const res = await axios.post(`${API_BASE_URL}/submit_test`, {
@@ -81,7 +81,7 @@ const MockTestInterface: React.FC = () => {
         user_id: 1, // Default user
         answers: answers
       });
-      
+
       setResult(res.data);
       setSubmitting(false);
     } catch (err) {
@@ -110,7 +110,7 @@ const MockTestInterface: React.FC = () => {
           </div>
           <h1 className="page-title">Test Submitted!</h1>
           <p className="page-subtitle" style={{ marginBottom: '2rem' }}>Here is your performance breakdown.</p>
-          
+
           <div className="stats-grid" style={{ marginBottom: '2rem' }}>
             <div className="stat-card" style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-lg)' }}>
               <div className="stat-info" style={{ textAlign: 'center', width: '100%' }}>
@@ -125,7 +125,7 @@ const MockTestInterface: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
             <button className="btn btn-outline" onClick={() => navigate('/')}>
               Return to Dashboard
@@ -141,10 +141,10 @@ const MockTestInterface: React.FC = () => {
 
   const currentQ = testData.questions[currentQIndex];
   const isLastQuestion = currentQIndex === testData.questions.length - 1;
-  
+
   let reviewDataForQ = null;
   if (reviewMode && result?.review_data) {
-      reviewDataForQ = result.review_data.find((r: any) => r.id === currentQ.id);
+    reviewDataForQ = result.review_data.find((r: any) => r.id === currentQ.id);
   }
 
   return (
@@ -169,12 +169,12 @@ const MockTestInterface: React.FC = () => {
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span className="section-badge">{currentQ.section}</span>
             {currentQ.source && (
-              <span className="source-badge" style={{ 
-                background: 'rgba(245, 158, 11, 0.1)', 
-                color: 'var(--accent-warning)', 
-                padding: '0.25rem 0.75rem', 
+              <span className="source-badge" style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                color: 'var(--accent-warning)',
+                padding: '0.25rem 0.75rem',
                 border: '1px solid rgba(245, 158, 11, 0.2)',
-                borderRadius: '1rem', 
+                borderRadius: '1rem',
                 fontSize: '0.8rem',
                 fontWeight: 600
               }}>
@@ -183,81 +183,81 @@ const MockTestInterface: React.FC = () => {
             )}
           </div>
           {reviewMode && reviewDataForQ && (
-             <span style={{ 
-               padding: '0.25rem 0.75rem', 
-               borderRadius: '1rem', 
-               fontSize: '0.875rem',
-               background: answers[currentQ.id] === reviewDataForQ.correct_answer ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-               color: answers[currentQ.id] === reviewDataForQ.correct_answer ? 'var(--accent-success)' : 'var(--accent-error)'
-             }}>
-               {answers[currentQ.id] === reviewDataForQ.correct_answer ? 'Correct' : (answers[currentQ.id] ? 'Incorrect' : 'Skipped')}
-             </span>
+            <span style={{
+              padding: '0.25rem 0.75rem',
+              borderRadius: '1rem',
+              fontSize: '0.875rem',
+              background: answers[currentQ.id] === reviewDataForQ.correct_answer ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+              color: answers[currentQ.id] === reviewDataForQ.correct_answer ? 'var(--accent-success)' : 'var(--accent-error)'
+            }}>
+              {answers[currentQ.id] === reviewDataForQ.correct_answer ? 'Correct' : (answers[currentQ.id] ? 'Incorrect' : 'Skipped')}
+            </span>
           )}
         </div>
-        
+
         <h3 className="question-text">{currentQ.text}</h3>
-        
+
         <div className="options-grid">
           {currentQ.options.map((opt, i) => {
             let btnClass = "option-btn";
-            
+
             if (reviewMode && reviewDataForQ) {
-                if (opt === reviewDataForQ.correct_answer) {
-                    btnClass += " selected"; // Green highlight via CSS or inline
-                } else if (opt === answers[currentQ.id]) {
-                    btnClass += " error"; // Red highlight
-                }
+              if (opt === reviewDataForQ.correct_answer) {
+                btnClass += " selected"; // Green highlight via CSS or inline
+              } else if (opt === answers[currentQ.id]) {
+                btnClass += " error"; // Red highlight
+              }
             } else if (!reviewMode && answers[currentQ.id] === opt) {
-                btnClass += " selected";
+              btnClass += " selected";
             }
-            
+
             return (
-              <button 
+              <button
                 key={i}
                 className={btnClass}
                 onClick={() => !reviewMode && handleSelectOption(currentQ.id, opt)}
                 style={reviewMode ? {
-                    borderColor: opt === reviewDataForQ?.correct_answer ? 'var(--accent-success)' : (opt === answers[currentQ.id] ? 'var(--accent-error)' : ''),
-                    background: opt === reviewDataForQ?.correct_answer ? 'rgba(16, 185, 129, 0.05)' : (opt === answers[currentQ.id] ? 'rgba(239, 68, 68, 0.05)' : '')
+                  borderColor: opt === reviewDataForQ?.correct_answer ? 'var(--accent-success)' : (opt === answers[currentQ.id] ? 'var(--accent-error)' : ''),
+                  background: opt === reviewDataForQ?.correct_answer ? 'rgba(16, 185, 129, 0.05)' : (opt === answers[currentQ.id] ? 'rgba(239, 68, 68, 0.05)' : '')
                 } : {}}
               >
                 <span style={{ fontWeight: 600, marginRight: '1rem', color: reviewMode && opt === reviewDataForQ?.correct_answer ? 'var(--accent-success)' : 'var(--text-muted)' }}>
                   {String.fromCharCode(65 + i)}.
-                </span> 
+                </span>
                 {opt}
               </button>
             )
           })}
         </div>
-        
+
         {reviewMode && reviewDataForQ && (
-            <div className="explanation-box" style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(59, 130, 246, 0.05)', borderLeft: '4px solid var(--accent-primary)', borderRadius: '0 var(--radius-md) var(--radius-md) 0' }}>
-                <h4 style={{ color: 'var(--accent-primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <AlertCircle size={18} /> AI Explanation (विस्तृत व्याख्या)
-                </h4>
-                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                    {reviewDataForQ.explanation}
-                </p>
-            </div>
+          <div className="explanation-box" style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(59, 130, 246, 0.05)', borderLeft: '4px solid var(--accent-primary)', borderRadius: '0 var(--radius-md) var(--radius-md) 0' }}>
+            <h4 style={{ color: 'var(--accent-primary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <AlertCircle size={18} /> AI Explanation (विस्तृत व्याख्या)
+            </h4> {/* The explanation might not always be AI-generated, especially for extracted questions. Consider renaming to "Explanation" or "Detailed Explanation". */}
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+              {reviewDataForQ.explanation}
+            </p>
+          </div>
         )}
       </div>
 
       <div className="test-footer">
-        <button 
+        <button
           className="btn btn-outline"
           onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
           disabled={currentQIndex === 0}
         >
           <ChevronLeft size={20} /> Previous
         </button>
-        
+
         {isLastQuestion ? (
           reviewMode ? (
             <button className="btn btn-primary" onClick={() => navigate('/')}>
               Finish Review <CheckCircle size={20} />
             </button>
           ) : (
-            <button 
+            <button
               className="btn btn-primary"
               onClick={handleSubmit}
               disabled={submitting}
@@ -266,7 +266,7 @@ const MockTestInterface: React.FC = () => {
             </button>
           )
         ) : (
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => setCurrentQIndex(prev => Math.min(testData.questions.length - 1, prev + 1))}
           >

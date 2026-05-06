@@ -2,7 +2,9 @@ from flask import Blueprint, request, jsonify
 from models import db, MockTest, Question, TestAttempt, User
 from ai_service import generate_mock_test_from_syllabus
 from extracted_questions import UK_GK_QUESTION_BANK
+from collections import defaultdict
 import json
+import math # Import the math module
 import random
 
 api = Blueprint('api', __name__)
@@ -134,35 +136,118 @@ def seed_extracted_test():
     user_id = data.get('user_id', 1)
     exclude_attempted = data.get('exclude_attempted', False)
     
+    num_questions = data.get('num_questions', 30) # Default to 30 if not provided
+    balance_topics = data.get('balance_topics', False) # Default to False if not provided
+
     set_number = MockTest.query.filter_by(is_extracted=True).count() + 1
     
     default_title = f'Extracted UK GK — Set {set_number}'
     if sub_topic:
         default_title = f'Extracted: {sub_topic} — Set {set_number}'
         
+    # If balancing topics, the title should reflect that
+    if balance_topics and (sub_topic is None or sub_topic == 'All Topics'):
+        default_title = f'Balanced Full Mock ({num_questions} Qs) — Set {set_number}'
+        
     title = data.get('title', default_title)
 
-    # Base query
-    query = MasterQuestion.query
-    if sub_topic:
-        query = query.filter_by(sub_topic=sub_topic)
-    
+    selected_questions_for_test = []
+
+    # Start with a base query for eligible questions
+    eligible_questions_query = MasterQuestion.query
     if exclude_attempted:
         # Get IDs of questions this user has already attempted
         attempted_ids = db.session.query(UserQuestionProgress.master_question_id).filter_by(
             user_id=user_id, is_attempted=True
         ).all()
         attempted_ids = [aid[0] for aid in attempted_ids]
-        query = query.filter(~MasterQuestion.id.in_(attempted_ids))
+        eligible_questions_query = eligible_questions_query.filter(~MasterQuestion.id.in_(attempted_ids))
 
-    all_questions = query.all()
-    random.shuffle(all_questions)
-    
-    # Take 20 questions for extracted tests (more manageable than 30)
-    selected = all_questions[:20]
+    if balance_topics and (sub_topic is None or sub_topic == 'All Topics'):
+        # Logic for balancing questions across all sub-topics
+        all_sub_topics_in_bank = db.session.query(MasterQuestion.sub_topic).distinct().all()
+        all_sub_topics_in_bank = [st[0] for st in all_sub_topics_in_bank if st[0]] # Filter out None
 
-    if not selected:
-        msg = f"No questions found for sub-topic: {sub_topic}"
+        questions_by_sub_topic = defaultdict(list)
+        
+        # Fetch all eligible questions for balancing
+        eligible_questions = eligible_questions_query.all()
+
+        for q in eligible_questions:
+            if q.sub_topic and q.sub_topic in all_sub_topics_in_bank: # Only consider known sub-topics
+                questions_by_sub_topic[q.sub_topic].append(q)
+        
+        total_eligible_questions_for_balancing = sum(len(q_list) for q_list in questions_by_sub_topic.values())
+        if total_eligible_questions_for_balancing == 0:
+             return jsonify({"error": "No eligible questions found to balance across topics."}), 404
+
+        # Determine how many questions to pick from each sub-topic
+        questions_to_pick_per_topic = {}
+        for st in all_sub_topics_in_bank:
+            if st in questions_by_sub_topic:
+                proportion = len(questions_by_sub_topic[st]) / total_eligible_questions_for_balancing
+                # Use math.ceil to ensure at least 1 question if a topic has questions
+                questions_to_pick_per_topic[st] = max(1, math.ceil(proportion * num_questions))
+            else:
+                questions_to_pick_per_topic[st] = 0
+
+        # Adjust total if rounding causes it to exceed num_questions or be too low
+        current_total_picked = sum(questions_to_pick_per_topic.values())
+
+        # If we picked too many due to rounding, reduce from largest topics first
+        while current_total_picked > num_questions:
+            # Find the topic with the most questions picked that still has questions available
+            largest_topic = None
+            max_picked = 0
+            for st, count in questions_to_pick_per_topic.items(): # type: ignore
+                if count > 0 and count > max_picked:
+                    largest_topic = st
+                    max_picked = count
+            
+            if largest_topic:
+                questions_to_pick_per_topic[largest_topic] -= 1
+                current_total_picked -= 1
+            else: # Should not happen if num_questions is reasonable
+                break
+        
+        # If we picked too few, add to topics that still have available questions
+        while current_total_picked < num_questions:
+            # Find a topic that has more eligible questions than we've picked
+            topic_to_add = None
+            for st, count in questions_to_pick_per_topic.items():
+                if count < len(questions_by_sub_topic[st]):
+                    topic_to_add = st
+                    break
+            
+            if topic_to_add:
+                questions_to_pick_per_topic[topic_to_add] += 1
+                current_total_picked += 1
+            else: # No more topics to add to, break
+                break
+
+
+        for st, count in questions_to_pick_per_topic.items():
+            if count > 0 and st in questions_by_sub_topic:
+                random.shuffle(questions_by_sub_topic[st])
+                selected_questions_for_test.extend(questions_by_sub_topic[st][:count])
+        
+        random.shuffle(selected_questions_for_test) # Shuffle the final list
+
+    else:
+        # Existing logic for single topic or no balancing (if balance_topics is False)
+        # Apply sub_topic filter here if not balancing across all topics
+        if sub_topic and sub_topic != 'All Topics':
+            eligible_questions_query = eligible_questions_query.filter_by(sub_topic=sub_topic)
+        
+        all_questions = eligible_questions_query.all()
+        random.shuffle(all_questions)
+        
+        selected_questions_for_test = all_questions[:num_questions]
+
+    if not selected_questions_for_test:
+        msg = f"No eligible questions found for the selected criteria."
+        if sub_topic and sub_topic != 'All Topics':
+            msg += f" (Sub-topic: {sub_topic})"
         if exclude_attempted:
             msg += " (excluding attempted)"
         return jsonify({"error": msg}), 404
@@ -171,7 +256,7 @@ def seed_extracted_test():
     db.session.add(new_test)
     db.session.commit()
 
-    for mq in selected:
+    for mq in selected_questions_for_test:
         opts = json.loads(mq.options)
         random.shuffle(opts)
         q = Question(
@@ -190,9 +275,9 @@ def seed_extracted_test():
     return jsonify({
         "message": "Extracted test seeded successfully",
         "test_id": new_test.id,
-        "title": title,
-        "question_count": len(selected),
-        "sub_topic": sub_topic
+        "title": title, # Use the generated title
+        "question_count": len(selected_questions_for_test),
+        "sub_topic": sub_topic if sub_topic != 'All Topics' else 'All Topics (Balanced)' if balance_topics else 'All Topics'
     }), 201
 
 # ─────────────────────────────────────────────────────────────
@@ -303,7 +388,7 @@ def get_analytics(user_id):
                     section_accuracy[section]["total_correct"] += data.get("score", 0)
                     section_accuracy[section]["total_attempted"] += data.get("total", 0)
             except:
-                pass
+                print(f"Warning: Could not parse section_scores for attempt {a.id}: {a.section_scores}")
                 
     formatted_section_accuracy = []
     for section, data in section_accuracy.items():
