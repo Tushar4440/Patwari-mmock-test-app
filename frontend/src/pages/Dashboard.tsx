@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { 
+import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
@@ -25,12 +25,12 @@ const Dashboard: React.FC = () => {
         console.error("Failed to fetch analytics", err);
         setLoading(false);
       });
-      
+
     const loadUsername = () => {
       const savedName = localStorage.getItem('uksssc_username');
       if (savedName) setUsername(savedName);
     };
-    
+
     loadUsername();
     window.addEventListener('storage', loadUsername);
     return () => window.removeEventListener('storage', loadUsername);
@@ -111,14 +111,14 @@ const Dashboard: React.FC = () => {
                 <AreaChart data={historyData}>
                   <defs>
                     <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="date" stroke="var(--text-muted)" />
                   <YAxis stroke="var(--text-muted)" />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
                     itemStyle={{ color: 'var(--text-primary)' }}
                   />
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         <div className="glass-panel chart-panel">
           <h2 className="section-title">Subject Mastery (Accuracy)</h2>
           {sectionAccuracy.length > 0 ? (
@@ -144,7 +144,7 @@ const Dashboard: React.FC = () => {
                   <PolarAngleAxis dataKey="section" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="var(--text-muted)" />
                   <Radar name="Accuracy" dataKey="accuracy" stroke="var(--accent-primary)" fill="var(--accent-primary)" fillOpacity={0.5} />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
                     itemStyle={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}
                   />
@@ -158,6 +158,10 @@ const Dashboard: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      <div style={{ position: 'fixed', bottom: '10%', left: '5%', opacity: 0.07, pointerEvents: 'none', zIndex: 9999, userSelect: 'none', fontSize: '4rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(-25deg)', fontStyle: 'italic' }}>
+        © 2026 MadeByTusharTewari copyright
       </div>
     </div>
   );

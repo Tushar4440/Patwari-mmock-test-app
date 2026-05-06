@@ -10,7 +10,7 @@ const TestGenerator: React.FC = () => {
   const [section, setSection] = useState('full');
   const [generating, setGenerating] = useState(false);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
-  
+
   const loadingTexts = [
     "Analyzing UKSSSC Syllabus...",
     "Formulating highly difficult questions...",
@@ -39,9 +39,9 @@ const TestGenerator: React.FC = () => {
         section: section,
         title: `Mock Test - ${section === 'full' ? 'Full Length' : section}`
       };
-      
+
       const res = await axios.post(`${API_BASE_URL}/generate_test`, payload);
-      
+
       setGenerating(false);
       navigate(`/test/${res.data.test_id}`);
     } catch (err) {
@@ -64,11 +64,11 @@ const TestGenerator: React.FC = () => {
         <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Settings className="gradient-text" /> Test Configuration
         </h2>
-        
+
         <div className="input-group" style={{ marginTop: '2rem' }}>
           <label className="input-label">Select Subject/Section</label>
           <div style={{ position: 'relative' }}>
-            <select 
+            <select
               className="select-field"
               value={section}
               onChange={(e) => setSection(e.target.value)}
@@ -105,8 +105,8 @@ const TestGenerator: React.FC = () => {
             </div>
           </div>
         ) : (
-          <button 
-            className="btn btn-primary" 
+          <button
+            className="btn btn-primary"
             style={{ width: '100%', marginTop: '1rem', padding: '1rem' }}
             onClick={handleGenerate}
           >
@@ -115,6 +115,10 @@ const TestGenerator: React.FC = () => {
             </span>
           </button>
         )}
+      </div>
+
+      <div style={{ position: 'fixed', top: '20%', right: '10%', opacity: 0.07, pointerEvents: 'none', zIndex: 9999, userSelect: 'none', fontSize: '3rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(15deg)', fontStyle: 'italic' }}>
+        © 2026 MadeByTusharTewari copyright
       </div>
     </div>
   );

@@ -274,6 +274,10 @@ const MockTestInterface: React.FC = () => {
           </button>
         )}
       </div>
+
+      <div style={{ position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%, -50%) rotate(-30deg)', opacity: 0.05, pointerEvents: 'none', zIndex: 9999, userSelect: 'none', fontSize: '5rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', fontStyle: 'italic' }}>
+        © 2026 MadeByTusharTewari copyright
+      </div>
     </div>
   );
 };
