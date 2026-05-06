@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { BookMarked, Star, Play, RefreshCw, ShieldCheck, Calendar, FileText, Loader2, ListOrdered, LayoutGrid } from 'lucide-react';
+import { BookMarked, Star, Play, RefreshCw, ShieldCheck, Calendar, FileText, Loader2, ListOrdered } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
