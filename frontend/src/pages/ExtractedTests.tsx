@@ -261,7 +261,7 @@ const ExtractedTests: React.FC = () => {
       )}
 
       <div style={{ position: 'fixed', bottom: '15%', right: '5%', opacity: 0.07, pointerEvents: 'none', zIndex: 9999, userSelect: 'none', fontSize: '4rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(-25deg)', fontStyle: 'italic' }}>
-        © 2026 MadeByTusharTewari copyright
+        © 2026 MadeByTusharTewari
       </div>
     </div>
   );
