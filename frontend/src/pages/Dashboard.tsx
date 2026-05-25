@@ -9,15 +9,35 @@ import { TrendingUp, Target, Award, Clock, BookMarked, ShieldCheck } from 'lucid
 import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
+interface HistoryItem {
+  attempt_id: number;
+  test_id: number;
+  score: number;
+  total: number;
+  percentage: number;
+  date: string;
+}
+
+interface SectionAccuracyItem {
+  section: string;
+  accuracy: number;
+  fullMark: number;
+}
+
+interface AnalyticsData {
+  history: HistoryItem[];
+  predicted_score: number;
+  section_accuracy: SectionAccuracyItem[];
+}
+
 const Dashboard: React.FC = () => {
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     const userId = localStorage.getItem('uksssc_user_id') || '1';
 
-    setLoading(true);
     axios.get(`${API_BASE_URL}/analytics/${userId}`)
       .then(res => {
         setAnalytics(res.data);

@@ -5,11 +5,21 @@ import { User, Calendar, Save, CheckCircle, LogOut } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
+interface HistoryItem {
+  total: number;
+  percentage: number;
+}
+
+interface AnalyticsData {
+  history: HistoryItem[];
+}
+
 const Profile: React.FC = () => {
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [name, setName] = useState('Aspirant');
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [name, setName] = useState(() => localStorage.getItem('uksssc_username') || 'Aspirant');
   const [saved, setSaved] = useState(false);
-  const [targetExam, setTargetExam] = useState('UKSSSC VDO/Patwari');
+  const [targetExam, setTargetExam] = useState(() => localStorage.getItem('uksssc_target_exam') || 'UKSSSC VDO/Patwari');
+  const [phone, setPhone] = useState(() => localStorage.getItem('uksssc_phone') || '');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,14 +33,23 @@ const Profile: React.FC = () => {
         console.error("Failed to fetch analytics", err);
       });
 
-    const savedName = localStorage.getItem('uksssc_username');
-    if (savedName) setName(savedName);
-    const savedExam = localStorage.getItem('uksssc_target_exam');
-    if (savedExam) setTargetExam(savedExam);
+    const handleStorageChange = () => {
+      const savedName = localStorage.getItem('uksssc_username');
+      if (savedName) setName(savedName);
+      const savedExam = localStorage.getItem('uksssc_target_exam');
+      if (savedExam) setTargetExam(savedExam);
+      const savedPhone = localStorage.getItem('uksssc_phone');
+      if (savedPhone) setPhone(savedPhone);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleSave = () => {
     localStorage.setItem('uksssc_username', name);
+    localStorage.setItem('uksssc_phone', phone);
+    localStorage.setItem('uksssc_target_exam', targetExam);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
     // Dispatch event so other components update
@@ -40,15 +59,17 @@ const Profile: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('uksssc_username');
     localStorage.removeItem('uksssc_user_id');
+    localStorage.removeItem('uksssc_phone');
+    localStorage.removeItem('uksssc_target_exam');
     window.dispatchEvent(new Event('storage'));
     navigate('/');
   };
 
   const historyData = analytics?.history || [];
   const totalTests = historyData.length;
-  const totalQuestions = historyData.reduce((acc: number, curr: any) => acc + curr.total, 0);
+  const totalQuestions = historyData.reduce((acc: number, curr: HistoryItem) => acc + curr.total, 0);
   const avgScore = totalTests > 0
-    ? (historyData.reduce((acc: number, curr: any) => acc + curr.percentage, 0) / totalTests).toFixed(1)
+    ? (historyData.reduce((acc: number, curr: HistoryItem) => acc + curr.percentage, 0) / totalTests).toFixed(1)
     : 0;
 
   return (
@@ -66,14 +87,47 @@ const Profile: React.FC = () => {
         </h2>
 
         <div className="input-group" style={{ marginTop: '1.5rem' }}>
-          <label className="input-label">Display Name</label>
+          <label className="input-label" htmlFor="profile-name">Display Name</label>
           <input
+            id="profile-name"
             type="text"
             className="select-field"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            title="Display Name"
+            placeholder="Enter your display name"
             style={{ width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}
           />
+        </div>
+
+        <div className="input-group" style={{ marginTop: '1.5rem' }}>
+          <label className="input-label" htmlFor="profile-phone">Phone Number</label>
+          <input
+            id="profile-phone"
+            type="tel"
+            className="select-field"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            title="Phone Number"
+            placeholder="Enter your phone number"
+            style={{ width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}
+          />
+        </div>
+
+        <div className="input-group" style={{ marginTop: '1.5rem' }}>
+          <label className="input-label" htmlFor="profile-target-exam">Target Exam</label>
+          <select
+            id="profile-target-exam"
+            className="select-field"
+            value={targetExam}
+            onChange={(e) => setTargetExam(e.target.value)}
+            title="Target Exam"
+            style={{ width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.75rem', borderRadius: 'var(--radius-md)' }}
+          >
+            <option value="UKSSSC VDO/Patwari">UKSSSC VDO/Patwari</option>
+            <option value="UKPSC Group C">UKPSC Group C</option>
+            <option value="Other State Exams">Other State Exams</option>
+          </select>
         </div>
 
         <div className="input-group" style={{ marginTop: '1.5rem' }}>
@@ -90,6 +144,14 @@ const Profile: React.FC = () => {
           style={{ marginTop: '1.5rem' }}
         >
           {saved ? <><CheckCircle size={18} /> Saved!</> : <><Save size={18} /> Save Changes</>}
+        </button>
+
+        <button
+          className="btn"
+          onClick={handleLogout}
+          style={{ marginTop: '1.5rem', marginLeft: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-error)', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+        >
+          <LogOut size={18} style={{ marginRight: '0.5rem' }} /> Logout
         </button>
       </div>
 

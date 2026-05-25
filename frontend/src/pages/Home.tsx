@@ -4,12 +4,16 @@ import { Zap, BookMarked, BarChart3, User as UserIcon, Calendar, ArrowRight, Sta
 import './pages.css';
 
 const Home: React.FC = () => {
-    const [username, setUsername] = useState('');
-    const [targetExam, setTargetExam] = useState('');
+    const [username, setUsername] = useState(() => localStorage.getItem('uksssc_username') || 'Aspirant');
+    const [targetExam, setTargetExam] = useState(() => localStorage.getItem('uksssc_target_exam') || 'UKSSSC VDO/Patwari');
 
     useEffect(() => {
-        setUsername(localStorage.getItem('uksssc_username') || 'Aspirant');
-        setTargetExam(localStorage.getItem('uksssc_target_exam') || 'UKSSSC VDO/Patwari');
+        const handleStorageChange = () => {
+            setUsername(localStorage.getItem('uksssc_username') || 'Aspirant');
+            setTargetExam(localStorage.getItem('uksssc_target_exam') || 'UKSSSC VDO/Patwari');
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const handleLogout = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Clock, CheckCircle, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
@@ -19,6 +19,18 @@ interface TestData {
   questions: Question[];
 }
 
+interface ReviewItem {
+  id: number;
+  correct_answer: string;
+  explanation: string;
+}
+
+interface TestResult {
+  score: number;
+  total: number;
+  review_data: ReviewItem[];
+}
+
 const MockTestInterface: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -29,8 +41,29 @@ const MockTestInterface: React.FC = () => {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(7200); // 2 hours default
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<TestResult | null>(null);
   const [reviewMode, setReviewMode] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
+    if (!testData) return;
+
+    setSubmitting(true);
+    const userId = localStorage.getItem('uksssc_user_id') || '1';
+    try {
+      const res = await axios.post(`${API_BASE_URL}/submit_test`, {
+        test_id: parseInt(id!),
+        user_id: parseInt(userId),
+        answers: answers
+      });
+
+      setResult(res.data);
+      setSubmitting(false);
+    } catch (err) {
+      console.error("Failed to submit test", err);
+      setSubmitting(false);
+      alert("Failed to submit test results.");
+    }
+  }, [id, testData, answers]);
 
   useEffect(() => {
     // Fetch test questions
@@ -62,33 +95,13 @@ const MockTestInterface: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, result]);
+  }, [loading, result, handleSubmit]);
 
   const handleSelectOption = (qId: number, option: string) => {
     setAnswers(prev => ({
       ...prev,
       [qId]: option
     }));
-  };
-
-  const handleSubmit = async () => {
-    if (!testData) return;
-
-    setSubmitting(true);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/submit_test`, {
-        test_id: parseInt(id!),
-        user_id: 1, // Default user
-        answers: answers
-      });
-
-      setResult(res.data);
-      setSubmitting(false);
-    } catch (err) {
-      console.error("Failed to submit test", err);
-      setSubmitting(false);
-      alert("Failed to submit test results.");
-    }
   };
 
   const formatTime = (seconds: number) => {
@@ -144,7 +157,7 @@ const MockTestInterface: React.FC = () => {
 
   let reviewDataForQ = null;
   if (reviewMode && result?.review_data) {
-    reviewDataForQ = result.review_data.find((r: any) => r.id === currentQ.id);
+    reviewDataForQ = result.review_data.find((r) => r.id === currentQ.id);
   }
 
   return (

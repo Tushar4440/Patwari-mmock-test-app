@@ -13,6 +13,12 @@ interface ExtractedTest {
   is_extracted: boolean;
 }
 
+interface ProgressData {
+  attempted_count: number;
+  total_bank: number;
+  overall_progress: number;
+}
+
 const ExtractedTests: React.FC = () => {
   const navigate = useNavigate();
   const [tests, setTests] = useState<ExtractedTest[]>([]);
@@ -24,7 +30,7 @@ const ExtractedTests: React.FC = () => {
   const [excludeAttempted, setExcludeAttempted] = useState(false);
   const [numQuestions, setNumQuestions] = useState(100); // New state for number of questions
   const [balanceTopics, setBalanceTopics] = useState(true); // New state for balancing topics
-  const [progress, setProgress] = useState<any>(null);
+  const [progress, setProgress] = useState<ProgressData | null>(null);
 
   const fetchSubTopics = () => {
     axios.get(`${API_BASE_URL}/extracted_subtopics`)
@@ -33,7 +39,6 @@ const ExtractedTests: React.FC = () => {
   };
 
   const fetchTests = () => {
-    setLoading(true);
     axios.get(`${API_BASE_URL}/extracted_tests`)
       .then(res => {
         let data = res.data;
@@ -53,7 +58,8 @@ const ExtractedTests: React.FC = () => {
   };
 
   const fetchProgress = () => {
-    axios.get(`${API_BASE_URL}/user_progress/1`)
+    const userId = localStorage.getItem('uksssc_user_id') || '1';
+    axios.get(`${API_BASE_URL}/user_progress/${userId}`)
       .then(res => setProgress(res.data))
       .catch(err => console.error("Failed to fetch progress:", err));
   };
@@ -66,19 +72,22 @@ const ExtractedTests: React.FC = () => {
 
   const handleSeedTest = async () => {
     setSeeding(true);
+    const userId = localStorage.getItem('uksssc_user_id') || '1';
     try {
       const payload = {
         sub_topic: selectedTopic === 'All Topics' ? null : selectedTopic,
         exclude_attempted: excludeAttempted,
-        user_id: 1,
+        user_id: parseInt(userId),
         num_questions: numQuestions, // Send numQuestions
         balance_topics: balanceTopics // Send balanceTopics
       };
       await axios.post(`${API_BASE_URL}/seed_extracted_test`, payload);
+      setLoading(true);
       fetchTests();
       fetchProgress();
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Failed to create extracted test.';
+    } catch (err) {
+      const axiosError = err as { response?: { data?: { error?: string } } };
+      const errorMsg = axiosError.response?.data?.error || 'Failed to create extracted test.';
       alert(errorMsg);
     } finally {
       setSeeding(false);
