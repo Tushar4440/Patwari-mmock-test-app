@@ -604,3 +604,33 @@
   box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
 }
 
+/* ══════════════════════════════════════════════════
+   BRAND WATERMARK
+══════════════════════════════════════════════════ */
+.app-watermark {
+  position: fixed;
+  bottom: 4%;
+  right: 3%;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 9999;
+  user-select: none;
+  font-size: clamp(3rem, 8vw, 5rem);
+  font-weight: 900;
+  color: var(--text-primary);
+  white-space: nowrap;
+  transform: rotate(-15deg);
+  font-style: italic;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.app-watermark.centered {
+  top: 50%;
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: clamp(4rem, 12vw, 8rem);
+  opacity: 0.03;
+}

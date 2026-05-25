@@ -125,8 +125,8 @@ const TestGenerator: React.FC = () => {
         )}
       </div>
 
-      <div style={{ position: 'fixed', top: '20%', right: '10%', opacity: 0.07, pointerEvents: 'none', zIndex: 9999, userSelect: 'none', fontSize: '3rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(15deg)', fontStyle: 'italic' }}>
-        © 2026 MadeByTusharTewari
+      <div className="app-watermark">
+        Tushar-Classes-2026
       </div>
     </div>
   );

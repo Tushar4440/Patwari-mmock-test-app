@@ -24,6 +24,10 @@ const Home: React.FC = () => {
 
     return (
         <div className="container animate-fade-in">
+            <div style={{ marginBottom: '0.5rem', borderLeft: '3px solid var(--accent-primary)', paddingLeft: '1rem' }}>
+                <h2 style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.25em', fontWeight: 800 }}>Tushar Classes</h2>
+            </div>
+
             <div className="dashboard-header" style={{ marginBottom: '3rem' }}>
                 <div>
                     <h1 className="page-title">नमस्ते, <span className="gradient-text">{username}</span></h1>
@@ -102,6 +106,10 @@ const Home: React.FC = () => {
                     <Star size={14} className="text-amber" />
                     Tip: Try subject-specific tests if you're struggling with Uttarakhand GK.
                 </p>
+            </div>
+
+            <div className="app-watermark">
+                Tushar-Classes-2026
             </div>
         </div>
     );

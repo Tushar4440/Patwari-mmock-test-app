@@ -6,6 +6,11 @@ import './pages.css';
 const Landing: React.FC = () => {
     return (
         <div className="container animate-fade-in" style={{ padding: '4rem 1rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.25rem', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.4em', fontWeight: 900 }}>Tushar Classes</h2>
+                <div style={{ width: '60px', height: '4px', background: 'var(--accent-primary)', margin: '0.75rem auto 0', borderRadius: '2px' }}></div>
+            </div>
+
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
                 <div className="extracted-hero-badge" style={{ margin: '0 auto' }}>
                     <ShieldCheck size={16} />
@@ -94,8 +99,8 @@ const Landing: React.FC = () => {
                 </Link>
             </div>
 
-            <div style={{ position: 'fixed', bottom: '5%', right: '2%', opacity: 0.03, pointerEvents: 'none', zIndex: -1, userSelect: 'none', fontSize: '4rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(-15deg)', fontStyle: 'italic' }}>
-                © 2026 MadeByTusharTewari
+            <div className="app-watermark">
+                Tushar-Classes-2026
             </div>
         </div>
     );

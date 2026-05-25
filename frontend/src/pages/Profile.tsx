@@ -180,8 +180,8 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ position: 'fixed', bottom: '5%', left: '2%', opacity: 0.07, pointerEvents: 'none', zIndex: 9999, userSelect: 'none', fontSize: '3.5rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(-15deg)', fontStyle: 'italic' }}>
-        © 2026 MadeByTusharTewari
+      <div className="app-watermark">
+        Tushar-Classes-2026
       </div>
     </div>
   );

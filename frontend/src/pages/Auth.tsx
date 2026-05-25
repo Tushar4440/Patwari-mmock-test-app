@@ -73,6 +73,11 @@ const Auth: React.FC = () => {
         <div className="container animate-fade-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
             <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem', position: 'relative' }}>
 
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                    <h2 style={{ fontSize: '0.9rem', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.25em', fontWeight: 800 }}>Tushar Classes</h2>
+                    <div style={{ width: '40px', height: '2px', background: 'var(--accent-primary)', margin: '0.5rem auto 0' }}></div>
+                </div>
+
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <h1 className="page-title" style={{ fontSize: '2rem' }}>
                         {isLogin ? 'Welcome ' : 'Join '}
@@ -171,10 +176,12 @@ const Auth: React.FC = () => {
                             </div>
 
                             <div className="input-group">
-                                <label className="input-label">Target Exam</label>
+                                <label htmlFor="auth-target-exam" className="input-label">Target Exam</label>
                                 <div style={{ position: 'relative' }}>
                                     <GraduationCap size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                                     <select
+                                        id="auth-target-exam"
+                                        title="Target Exam"
                                         className="select-field"
                                         value={targetExam}
                                         onChange={(e) => setTargetExam(e.target.value)}
@@ -213,8 +220,8 @@ const Auth: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{ position: 'fixed', bottom: '5%', right: '2%', opacity: 0.03, pointerEvents: 'none', zIndex: -1, userSelect: 'none', fontSize: '4rem', fontWeight: 900, color: 'var(--text-primary)', whiteSpace: 'nowrap', transform: 'rotate(-15deg)', fontStyle: 'italic' }}>
-                © 2026 MadeByTusharTewari
+            <div className="app-watermark">
+                Tushar-Classes-2026
             </div>
         </div>
     );
