@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { User, Calendar, Save, CheckCircle } from 'lucide-react';
+import { User, Calendar, Save, CheckCircle, LogOut } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
 import './pages.css';
 
@@ -8,9 +9,13 @@ const Profile: React.FC = () => {
   const [analytics, setAnalytics] = useState<any>(null);
   const [name, setName] = useState('Aspirant');
   const [saved, setSaved] = useState(false);
+  const [targetExam, setTargetExam] = useState('UKSSSC VDO/Patwari');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/analytics/1`)
+    const userId = localStorage.getItem('uksssc_user_id') || '1';
+
+    axios.get(`${API_BASE_URL}/analytics/${userId}`)
       .then(res => {
         setAnalytics(res.data);
       })
@@ -20,6 +25,8 @@ const Profile: React.FC = () => {
 
     const savedName = localStorage.getItem('uksssc_username');
     if (savedName) setName(savedName);
+    const savedExam = localStorage.getItem('uksssc_target_exam');
+    if (savedExam) setTargetExam(savedExam);
   }, []);
 
   const handleSave = () => {
@@ -28,6 +35,13 @@ const Profile: React.FC = () => {
     setTimeout(() => setSaved(false), 3000);
     // Dispatch event so other components update
     window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('uksssc_username');
+    localStorage.removeItem('uksssc_user_id');
+    window.dispatchEvent(new Event('storage'));
+    navigate('/');
   };
 
   const historyData = analytics?.history || [];

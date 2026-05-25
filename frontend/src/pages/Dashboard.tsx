@@ -12,11 +12,13 @@ import './pages.css';
 const Dashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState('Aspirant');
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, user_id would be from auth
-    axios.get(`${API_BASE_URL}/analytics/1`)
+    const userId = localStorage.getItem('uksssc_user_id') || '1';
+
+    setLoading(true);
+    axios.get(`${API_BASE_URL}/analytics/${userId}`)
       .then(res => {
         setAnalytics(res.data);
         setLoading(false);
@@ -28,13 +30,20 @@ const Dashboard: React.FC = () => {
 
     const loadUsername = () => {
       const savedName = localStorage.getItem('uksssc_username');
-      if (savedName) setUsername(savedName);
+      setUsername(savedName);
     };
 
     loadUsername();
     window.addEventListener('storage', loadUsername);
     return () => window.removeEventListener('storage', loadUsername);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('uksssc_username');
+    localStorage.removeItem('uksssc_user_id');
+    setUsername(null);
+    window.dispatchEvent(new Event('storage'));
+  };
 
   if (loading) {
     return <div className="container"><div className="loading-spinner">Loading your progress...</div></div>;
@@ -48,12 +57,23 @@ const Dashboard: React.FC = () => {
     <div className="container animate-fade-in">
       <div className="dashboard-header">
         <div>
-          <h1 className="page-title">Welcome back, <span className="gradient-text">{username}</span></h1>
+          <h1 className="page-title">
+            Welcome back, <span className="gradient-text">{username}</span>
+          </h1>
           <p className="page-subtitle">Track your UKSSSC VDO/Patwari exam preparation journey.</p>
         </div>
-        <Link to="/generate" className="btn btn-primary">
-          Take New Mock Test
-        </Link>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button
+            onClick={handleLogout}
+            className="btn"
+            style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--accent-error)', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer' }}
+          >
+            Logout
+          </button>
+          <Link to="/generate" className="btn btn-primary">
+            Take New Mock Test
+          </Link>
+        </div>
       </div>
 
       <div className="stats-grid">
