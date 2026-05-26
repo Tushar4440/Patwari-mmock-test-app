@@ -2,6 +2,8 @@
 
 A full-stack, AI-powered mock test generation platform specifically designed for the **UKSSSC VDO/Patwari Exam (May 17, 2026)**. 
 
+**Live Website:** [https://patwari-mmock-test-app.vercel.app/](https://patwari-mmock-test-app.vercel.app/)
+
 This platform uses the cutting-edge **Google Gemini 2.5 Flash AI** to automatically generate an unlimited number of highly difficult, memory-based mock tests strictly based on the exam syllabus.
 
 ## 🌟 Key Features
