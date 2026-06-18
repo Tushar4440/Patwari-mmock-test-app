@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from models import db, MockTest, Question, TestAttempt, User
 from ai_service import generate_mock_test_from_syllabus
 from extracted_questions import UK_GK_QUESTION_BANK
-from collections import defaultdict
+from bs_negi_questions import BS_NEGI_UNITS_METADATA, BS_NEGI_QUESTION_BANK
 import json
 import math # Import the math module
 import random
@@ -59,7 +59,7 @@ def generate_test():
             test_id=new_test.id,
             section=q_data['section'],
             text=q_data['text'],
-            options=q_data['options'],
+            options=json.dumps(q_data['options'], ensure_ascii=False), # Convert list to JSON string for DB
             correct_answer=q_data['correct_answer'],
             explanation=q_data['explanation']
         )
@@ -445,3 +445,171 @@ def get_user_progress(user_id):
         "overall_progress": round((attempted_count / total_bank * 100), 1) if total_bank > 0 else 0,
         "sub_topic_stats": sorted(sub_topic_stats, key=lambda x: x['percentage'], reverse=True)
     }), 200
+
+# ─────────────────────────────────────────────────────────────
+#  B.S. NEGI MCQ PRACTICE ROUTES
+# ─────────────────────────────────────────────────────────────
+
+@api.route('/bs_negi/units', methods=['GET'])
+def get_bs_negi_units():
+    user_id = request.args.get('user_id', 1, type=int)
+    from models import BsNegiProgress
+    from collections import defaultdict # Import defaultdict
+    from bs_negi_questions import BS_NEGI_QUESTION_BANK
+    
+    progress_records = BsNegiProgress.query.filter_by(user_id=user_id).all()
+    progress_map = {p.question_id: p for p in progress_records}
+    
+    unit_questions = defaultdict(list)
+    for i, q in enumerate(BS_NEGI_QUESTION_BANK):
+        unit_questions[q['unit']].append((i, q))
+        
+    results = []
+    for unit_num in sorted(unit_questions.keys()):
+        meta = BS_NEGI_UNITS_METADATA.get(unit_num, {
+            "title_hi": f"इकाई {unit_num}",
+            "title_en": f"Unit {unit_num}"
+        })
+        chapters = sorted(list(set(q['chapter'] for _, q in unit_questions[unit_num])))
+        
+        q_list = unit_questions[unit_num]
+        q_count = len(q_list)
+        attempted_count = 0
+        correct_count = 0
+        
+        for idx, _ in q_list:
+            q_id = f"bs_negi_{idx}"
+            if q_id in progress_map:
+                attempted_count += 1
+                if progress_map[q_id].is_correct:
+                    correct_count += 1
+                    
+        results.append({
+            "unit_number": unit_num,
+            "title_hi": meta["title_hi"],
+            "title_en": meta["title_en"],
+            "chapters": chapters,
+            "question_count": q_count,
+            "attempted_count": attempted_count,
+            "correct_count": correct_count
+        })
+    return jsonify(results), 200
+
+@api.route('/ai_practice_questions', methods=['POST'])
+def get_ai_practice_questions():
+    """
+    Generates a set of AI-powered practice questions on demand.
+    These questions are not saved to the database as a formal mock test.
+    """
+    data = request.json
+    
+    # Dynamically generate syllabus text from BS_NEGI_UNITS_METADATA
+    syllabus_parts = []
+    for unit_num in sorted(BS_NEGI_UNITS_METADATA.keys()):
+        meta = BS_NEGI_UNITS_METADATA[unit_num]
+        syllabus_parts.append(f"Unit {unit_num}: {meta['title_en']} ({meta['title_hi']})")
+    syllabus_text = "Generate questions based on the following topics from B.S. Negi's Uttarakhand GK book: " + "; ".join(syllabus_parts) + "."
+
+    section = data.get('section', 'full')
+    # For practice, generate a smaller set of questions, e.g., 3-5 per section
+    num_questions_per_section = data.get('num_questions_per_section', 3) 
+    
+    try:
+        generated_questions = generate_mock_test_from_syllabus(
+            syllabus_text=syllabus_text, 
+            section=section, 
+            num_questions_per_section=num_questions_per_section
+        )
+        
+        # Add a dummy ID for frontend tracking, as these are not saved to DB
+        for i, q in enumerate(generated_questions):
+            q['id'] = f"ai_practice_{i}"
+            q['unit'] = 0 # Dummy unit for display purposes in frontend
+            q['chapter'] = q.get('section', 'AI Generated Practice') # Use section as chapter if available
+            # Map to keys from improved AI service
+            q['text_hi'] = q.get('text_hi', q.get('text', ''))
+            q['text_en'] = q.get('text_en', '(AI Generated Question)')
+            q['explanation_hi'] = q.get('explanation_hi', q.get('explanation', ''))
+            q['explanation_en'] = q.get('explanation_en', '(Detailed AI Analysis)')
+            q['attempted'] = False
+            q['correct'] = False
+
+        return jsonify(generated_questions), 200
+    except Exception as e:
+        print(f"Error generating AI practice questions: {e}")
+        return jsonify({"error": f"Failed to generate AI practice questions: {str(e)}"}), 500
+
+@api.route('/bs_negi/questions', methods=['GET'])
+def get_bs_negi_questions():
+    unit_num = request.args.get('unit', type=int)
+    user_id = request.args.get('user_id', 1, type=int)
+    from models import BsNegiProgress
+    from bs_negi_questions import BS_NEGI_QUESTION_BANK
+    
+    progress_records = BsNegiProgress.query.filter_by(user_id=user_id).all()
+    progress_map = {p.question_id: p for p in progress_records}
+    
+    questions = []
+    for i, q in enumerate(BS_NEGI_QUESTION_BANK):
+        if unit_num is not None and q['unit'] != unit_num:
+            continue
+            
+        q_id = f"bs_negi_{i}"
+        prog = progress_map.get(q_id)
+        
+        # Shuffle options to ensure the correct answer is not always the first one
+        shuffled_options = list(q['options'])
+        random.shuffle(shuffled_options)
+
+        questions.append({
+            "id": q_id,
+            "unit": q['unit'],
+            "chapter": q['chapter'],
+            "text_hi": q['text_hi'],
+            "text_en": q['text_en'],
+            "options": shuffled_options,
+            "correct_answer": q['correct_answer'],
+            "explanation_hi": q['explanation_hi'],
+            "explanation_en": q['explanation_en'],
+            "attempted": prog.is_attempted if prog else False,
+            "correct": prog.is_correct if prog else False
+        })
+    
+    # Shuffle the questions themselves so the order is different every time
+    random.shuffle(questions)
+    
+    return jsonify(questions), 200
+
+@api.route('/bs_negi/progress', methods=['POST'])
+def save_bs_negi_progress():
+    data = request.json or {}
+    user_id = data.get('user_id', 1)
+    
+    updates = data.get('updates', [])
+    if not updates:
+        q_id = data.get('question_id')
+        is_correct = data.get('is_correct', False)
+        if q_id:
+            updates = [{"question_id": q_id, "is_correct": is_correct}]
+            
+    if not updates:
+        return jsonify({"error": "No updates provided"}), 400
+        
+    from models import BsNegiProgress
+    
+    for item in updates:
+        q_id = item.get('question_id')
+        is_correct = item.get('is_correct', False)
+        if not q_id:
+            continue
+            
+        prog = BsNegiProgress.query.filter_by(user_id=user_id, question_id=q_id).first()
+        if not prog:
+            prog = BsNegiProgress(user_id=user_id, question_id=q_id)
+            db.session.add(prog)
+        
+        prog.is_attempted = True
+        prog.is_correct = is_correct
+        
+    db.session.commit()
+    return jsonify({"message": "Progress updated successfully"}), 200

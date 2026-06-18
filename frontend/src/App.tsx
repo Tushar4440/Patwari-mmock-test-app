@@ -6,6 +6,7 @@ import TestGenerator from './pages/TestGenerator';
 import MockTestInterface from './pages/MockTestInterface';
 import Profile from './pages/Profile';
 import ExtractedTests from './pages/ExtractedTests';
+import BsNegiPractice from './pages/BsNegiPractice';
 import Auth from './pages/Auth';
 import Landing from './pages/Landing';
 import Home from './pages/Home';
@@ -43,6 +44,7 @@ function App() {
               <Route path="/test/:id" element={<MockTestInterface />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/extracted" element={<ExtractedTests />} />
+              <Route path="/bs-negi" element={<BsNegiPractice />} />
               <Route path="/login" element={<Auth />} />
               {/* Catch-all for logged in users */}
               <Route path="*" element={<Navigate to="/" replace />} />

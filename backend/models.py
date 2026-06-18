@@ -61,3 +61,13 @@ class TestAttempt(db.Model):
     total_questions = db.Column(db.Integer, nullable=False)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
     section_scores = db.Column(db.Text, nullable=True) # JSON string
+
+class BsNegiProgress(db.Model):
+    """Tracks progress of BS Negi MCQ Practice."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    question_id = db.Column(db.String(100), nullable=False) # e.g. "bs_negi_1_0" (unit_index)
+    is_correct = db.Column(db.Boolean, default=False)
+    is_attempted = db.Column(db.Boolean, default=True)
+    last_attempted_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

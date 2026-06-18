@@ -1,6 +1,6 @@
-import google.generativeai as genai
 import sys
 import os
+import google.generativeai as genai # Updated import to address FutureWarning
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,7 +9,7 @@ genai.configure(api_key=api_key)
 
 try:
     print(f"Testing Gemini API with key starting with: {str(api_key)[:5]}...")
-    model = genai.GenerativeModel('gemini-2.5-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash') # Using gemini-1.5-flash for testing
     response = model.generate_content("Hello")
     print("Success! Response:")
     print(response.text)

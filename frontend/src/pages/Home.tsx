@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, BookMarked, BarChart3, User as UserIcon, Calendar, ArrowRight, Star } from 'lucide-react';
+import { Zap, BookMarked, BarChart3, User as UserIcon, Calendar, ArrowRight, Star, Bookmark } from 'lucide-react';
 import './pages.css';
 
 const Home: React.FC = () => {
@@ -72,6 +72,19 @@ const Home: React.FC = () => {
                     </div>
                     <Link to="/extracted" className="btn btn-outline" style={{ width: 'fit-content' }}>
                         Browse Bank <BookMarked size={18} style={{ marginLeft: '0.5rem' }} />
+                    </Link>
+                </div>
+
+                {/* BS Negi Practice Card */}
+                <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>B.S. Negi <span className="gradient-text">Book Practice</span></h2>
+                        <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '2rem' }}>
+                            Master B.S. Negi's Uttarakhand GK book with bilingual practice and unit mock tests.
+                        </p>
+                    </div>
+                    <Link to="/bs-negi" className="btn btn-outline" style={{ width: 'fit-content', border: '1px solid rgba(139, 92, 246, 0.4)' }}>
+                        Start Practice <Bookmark size={18} style={{ marginLeft: '0.5rem', color: 'var(--accent-secondary)' }} />
                     </Link>
                 </div>
             </div>

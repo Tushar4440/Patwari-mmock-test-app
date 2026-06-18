@@ -634,3 +634,19 @@
   font-size: clamp(4rem, 12vw, 8rem);
   opacity: 0.03;
 }
+
+/* ══════════════════════════════════════════════════
+   BS NEGI PRACTICE CUSTOM STYLES
+══════════════════════════════════════════════════ */
+.option-btn.error {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: var(--accent-danger) !important;
+  color: var(--accent-danger) !important;
+}
+
+.option-btn.correct {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: var(--accent-success) !important;
+  color: var(--accent-success) !important;
+}
+
